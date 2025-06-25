@@ -1,0 +1,29 @@
+- name: 1. Installer apache php 
+  apt:
+    name:
+      - apache2 
+      - php
+      - curl 
+    state: present
+
+      #notify: 2. redémarrer apache et activer adminer 
+- name: 2. Installation des extensions php de GLPI
+  apt:
+    name:
+      - php-xml 
+      - php-common
+      - php-json
+      - php-mysql
+      - php-mbstring
+      - php-curl
+      - php-gd
+      - php-intl
+      - php-imap
+      - php-apcu
+      - php-zip
+      - php-xmlrpc
+      - php-bz2
+      - php-ldap
+    state: present
+  notify:
+    - restart apache2

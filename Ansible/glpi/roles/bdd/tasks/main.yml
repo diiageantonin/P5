@@ -1,0 +1,29 @@
+- name: 1. Installer mariadb
+  apt:
+    name:
+      - mariadb-server 
+      - python3-pymysql
+    state: present
+
+- name: 2. s'assurer que mariadb est en fonctionnement
+  service:
+    name: mariadb
+    state: started
+
+- name: 3. Creer un utilisateur et  lui attribuer tous les droits
+  community.mysql.mysql_user:
+    name: glpi
+    password: glpi
+    priv: '*.*:ALL,GRANT'
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  notify:
+    - restart mariadb
+
+- name: 4. Creation de la base de donnee  'db_glpi'
+  community.mysql.mysql_db:
+    name: db_glpi
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  notify:
+    - restart mariadb

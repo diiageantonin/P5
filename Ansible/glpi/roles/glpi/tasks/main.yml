@@ -1,0 +1,19 @@
+- name: 1. Telechargement de l'archive de glpi 10.0.18
+  get_url:
+    url: https://github.com/glpi-project/glpi/releases/download/10.0.18/glpi-10.0.18.tgz
+    dest: /tmp
+
+- name: 2.  Extraire glpi 10.0.18.tgz vers /tmp/
+  ansible.builtin.unarchive:
+    src: /tmp/glpi-10.0.18.tgz
+    dest: /var/www/html/
+    remote_src: true 
+
+- name: 3.  Changer propritaire group et permissions
+  file:
+    path: /var/www/html/glpi
+    owner: www-data
+    group: www-data
+    mode: '0755'
+    recurse: yes
+

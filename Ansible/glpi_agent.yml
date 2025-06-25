@@ -1,0 +1,43 @@
+---
+- name: Installer l'agent GLPI via le paquet .deb
+  hosts: all
+  become: true
+
+  vars:
+    agent_deb_url: "https://github.com/glpi-project/glpi-agent/releases/download/1.7/glpi-agent_1.7-1_all.deb"
+    agent_deb_path: "/tmp/glpi-agent.deb"
+    glpi_server_url: "http://vm-glpi:8080"
+
+  tasks:
+    - name: Installer les dépendances système
+      apt:
+        name: wget
+        state: present
+        update_cache: yes
+
+    - name: Télécharger le paquet glpi-agent
+      get_url:
+        url: "{{ agent_deb_url }}"
+        dest: "{{ agent_deb_path }}"
+        mode: '0644'
+
+    - name: Installer le paquet glpi-agent
+      apt:
+        deb: "{{ agent_deb_path }}"
+
+    - name: Modifier la configuration glpi-agent
+      lineinfile:
+        path: /etc/glpi-agent/glpi-agent.conf
+        regexp: '^server='
+        line: "server={{ glpi_server_url }}"
+        create: yes
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Redémarrer et activer le service glpi-agent
+      service:
+        name: glpi-agent
+        state: restarted
+        enabled: yes
+

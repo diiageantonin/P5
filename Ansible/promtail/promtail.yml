@@ -1,0 +1,8 @@
+- name: Installer et configurer Promtail
+  hosts: all
+  vars: 
+    loki_url: "http://192.168.6.5:3100/loki/api/v1/push"
+  become: yes
+  roles:
+    - promtail
+

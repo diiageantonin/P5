@@ -1,0 +1,40 @@
+- name: Installer et configurer l'agent Zabbix
+  hosts: all
+  become: true
+
+  vars:
+    zabbix_server: "192.168.3.2"
+    hostname: "{{ ansible_hostname }}"
+
+  tasks:
+    - name: Installer zabbix-agent et outils nécessaires
+      apt:
+        name:
+          - zabbix-agent
+          - curl
+          - wget
+        state: present
+        update_cache: true
+
+    - name: S'assurer que le dossier /etc/zabbix existe
+      file:
+        path: /etc/zabbix
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Déployer la configuration de l'agent Zabbix
+      template:
+        src: /etc/ansible/zabbix_agent/templates/zabbix_agentd.conf.j2
+        dest: /etc/zabbix/zabbix_agentd.conf
+        mode: '0644'
+        owner: root
+        group: root
+
+    - name: Redémarrer et activer le service zabbix-agent
+      service:
+        name: zabbix-agent
+        state: restarted
+        enabled: yes
+

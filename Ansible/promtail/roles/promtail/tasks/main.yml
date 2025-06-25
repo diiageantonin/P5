@@ -1,0 +1,67 @@
+- name: Installer unzip sur la cible
+  ansible.builtin.package:
+    name: unzip
+    state: present
+
+- name: Créer répertoire Promtail
+  file:
+    path: /etc/promtail
+    state: directory
+    mode: '0755'
+
+- name: Créer le dossier /usr/local/bin
+  file:
+    path: /usr/local/bin/
+    state: directory
+    mode: '0755'
+
+- name: Copier l’archive Promtail depuis le serveur Ansible
+  copy:
+    src: /etc/ansible/promtail/roles/files/promtail-linux-amd64.zip
+    dest: /tmp/promtail.zip
+    mode: '0644'
+
+- name: Extraire Promtail
+  ansible.builtin.unarchive:
+    src: /tmp/promtail.zip
+    dest: /usr/local/bin/
+    remote_src: yes
+    mode: '0755'
+#- name: Dézipper Promtail
+      #unarchive:
+      # src: /tmp/promtail.zip
+      #dest: /etc/promtail/
+      #remote_src: yes
+
+- name: Créer le fichier de configuration de Promtail
+  template:
+    src: /etc/ansible/promtail/roles/templates/promtail-config.yml.j2
+    dest: /etc/promtail/config.yml
+    mode: '0644'
+
+- name: Créer un service systemd pour Promtail
+  copy:
+    dest: /etc/systemd/system/promtail.service
+    content: |
+      [Unit]
+      Description=Promtail
+      After=network.target
+
+      [Service]
+      ExecStart=/usr/local/bin/promtail-linux-amd64 -config.file=/etc/promtail/config.yml
+      Restart=always
+      User=root
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Recharger systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Activer et démarrer Promtail
+  systemd:
+    name: promtail
+    enabled: yes
+    state: started
+
